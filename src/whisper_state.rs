@@ -302,6 +302,20 @@ impl<'a> WhisperState<'a> {
         Ok(logits)
     }
 
+    pub fn get_logits_raw(&self, offset: usize) -> Result<Vec<f32>, WhisperError> {
+        let ret = unsafe { whisper_rs_sys::whisper_get_logits_from_state(self.ptr) };
+        if ret.is_null() {
+            return Err(WhisperError::NullPointer);
+        }
+        let mut logits = Vec::new();
+        let n_vocab = self.n_vocab();
+        for i in 0..n_vocab {
+            let val = unsafe { *ret.offset(offset as isize + i as isize) };
+            logits.push(val);
+        }
+        Ok(logits)
+    }
+
     // model attributes
     /// Get the mel spectrogram length.
     ///
